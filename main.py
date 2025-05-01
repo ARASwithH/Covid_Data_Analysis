@@ -195,3 +195,37 @@ class Dtree:
             node.left = None
 
         return node
+
+
+# preproccesing , making tree and calculating f1-score
+
+
+data_set = pd.read_csv('Covid_Data.csv')  # reading CSV
+data_set = data_set.drop('DATE_DIED', axis=1)  # deleting useless columns
+data_set = data_set.drop('INTUBED', axis=1)
+data_set = data_set.drop('ICU', axis=1)
+
+for i in data_set.columns.tolist():  # deleting missing values
+    if i in ['PREGNANT', 'AGE']:
+        pass
+    data_set = data_set.drop(data_set[data_set[i] > 90].index)
+
+test_dataset = data_set.iloc[:1000]  # splitting predict and test
+train_dataset = data_set.iloc[1000:]
+
+
+my_tree = Dtree(train_dataset)  # making tree
+my_tree.making_tree(my_tree.root)
+
+
+# calculating f1-score
+true_labels = test_dataset.iloc[:, -1].tolist()
+predicted_labels = []
+
+for i in range(1000):
+    row = test_dataset.iloc[i]
+    predicted_labels.append(my_tree.predict(my_tree.root, row))
+
+print("F1-Score with average = macro :", f1_score(true_labels, predicted_labels, average='macro'))
+print("F1-Score with average = micro :", f1_score(true_labels, predicted_labels, average='micro'))
+print("F1-Score with average = weighted :", f1_score(true_labels, predicted_labels, average='weighted'))
